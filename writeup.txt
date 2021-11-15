@@ -1,0 +1,10 @@
+Contribution:
+Jay: I worked on spell words and delete word from graph functions as well as
+ print. I also made the gradescript.
+
+Question:
+We used a queue, map, and a vector in our implementation. The queue was used to 
+in the BFS to check if a node was visited or not. The map was used to hold the
+IDs of each die in our input. Then we used vectors to store each character in the 
+strings. The average time complexity should be O(|V||E|^2) based on our usage
+of the Edmonds-Karp algorithm.
