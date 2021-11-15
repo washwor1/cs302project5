@@ -49,6 +49,7 @@ class Graph{
     vector<Node *> nodes; //holds the nodes
     vector<int> spellingIds; //order of flow to spell word
     int min_nodes; //min number of dice nodes
+    map<int, int> Store_id;
     void add_dice_to_graph(string die, int id); //add dice nodes to graph
     void add_word_to_graph(string word, int id); //add word (letter) nodes to graph
     bool BFS(); //breadth first search for Edmonds-Karp
@@ -58,7 +59,7 @@ class Graph{
 };
 
 bool Graph::BFS(){
-    //Reset Backedges
+    //backedge is reset
     int size = nodes.size();
      for(int i = 0; i < size; i++){
         nodes[i]->visited = false;
@@ -75,23 +76,84 @@ bool Graph::BFS(){
         Node* next;
         Edge* edge;
 
-        //loop through nodes adj list
-        for(int i = 0; (size_t)i < nodes[node]->adj.size(); i++){
+        //goes through adj list
+        for(int i = 0; (size_t)i < nodes[node] -> adj.size(); i++){
             next = nodes[node] -> adj[i]->to;
             edge = nodes[node] -> adj[i];
 
-            //Add Unvisited node to queue
+            //adds the unvisted nodes to que 
             if(!next->visited && edge -> original == 1){
-                //Set its backEdge
+                //has a backedge set up
                 next -> backedge = edge -> reverse;
                 bfs.push(next->id);
-                //Path Found
+                //checking to see if a path has been found
                 if(next->type == SINK)
                     return true;
             }
         }
     }
     return false;
+}
+
+bool Graph::spell_word(){
+    Node* n = nodes.back();
+    while(BFS() == true){
+        Node* n = nodes.back();
+        int word;
+
+        while (n -> type != SOURCE)
+        {
+            n -> backedge -> original = 1;
+            n -> backedge -> residual = 0;
+            n -> backedge -> reverse -> residual = 1;
+            n -> backedge -> reverse -> original = 0;
+            
+            if (n -> type == WORD){
+                word = n -> id;
+            }
+            if (n -> type == DICE){
+                Store_id[word] = n -> id;
+            }
+            n = n -> backedge -> to;
+        }
+    }
+    int size = nodes.size();
+    for (int i = min_nodes + 1; i < size; i++)
+    {
+        for (int j = 0; (size_t)j < nodes[i] -> adj.size(); j++)
+        {
+            if (nodes[i] -> adj[j] -> to -> type == SINK)
+            {
+                if (nodes[i] -> adj[j] -> residual != 1)
+                {
+                    return false;
+                }
+                
+            }
+            
+        }
+        
+    }
+    return true;
+}
+
+void Graph::delete_word_from_graph(){
+    nodes.back()->adj.clear();
+
+    for(int i = 0; (size_t)i < nodes[0]->adj.size();i++){
+        nodes[0]->adj[i]->original = 1;
+        nodes[0]->adj[i]->residual = 0;
+        nodes[0]->adj[i]->reverse->original = 0;
+        nodes[0]->adj[i]->reverse->residual = 1;
+    }
+
+    Store_id.clear();
+    //clears the word
+    nodes.erase(nodes.begin() + min_nodes + 1, nodes.end());
+    //adj list is reset
+    for(int i = 1; i <= min_nodes; i++){
+        nodes[i]->adj.clear();
+    }
 }
 
 int main(int argc, char *argv[]){
