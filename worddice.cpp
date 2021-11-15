@@ -22,8 +22,21 @@ class Edge{
     //from -> to
     class Node *to; //node edge is pointing to
     class Node *from; //node edge is pointing from
-    Edge(class Node *to, class Node *from, bool reverse_edge = false); //constructor for edges
-    ~Edge(){}; //default destructor
+    Edge(){};
+    Edge(class Node *TO, class Node *FROM) //constructor for edges
+    {
+        from = FROM;
+        to = TO;
+        original = 1;
+        residual = 0;
+        Edge* rev = new Edge();
+        rev -> from = TO;
+        rev -> to = from;
+        rev -> original = 0;
+        rev -> residual = 1;
+        rev -> reverse = this;
+        reverse = rev;
+    }
     Edge *reverse; //edge going the other way
     int original; //original weight per edge
     int residual; //allows for updated weighting during Edmonds-Karp
@@ -31,8 +44,7 @@ class Edge{
 
 class Node{
     public:
-    Node(int id, Node_Type type, string word = ""); //constructor for nodes
-    ~Node(){}; //default destructor
+    Node() : letters(26, false), visited(false) {}; //constructor for nodes
     int id; //node id
     Node_Type type; //type of node it is (source, sink, word or dice)
     vector<bool> letters; //length 26 with letters contained in word set to 1
@@ -43,8 +55,6 @@ class Node{
 
 class Graph{
     public:
-    Graph(); //constructor initializes graph with source node
-    ~Graph(); //destructor to deallocate memory of graph
     Node *source; //not necessary but makes code more readable
     vector<Node *> nodes; //holds the nodes
     vector<int> spellingIds; //order of flow to spell word
@@ -96,25 +106,25 @@ bool Graph::BFS(){
 }
 
 bool Graph::spell_word(){
-    Node* n = nodes.back();
+    Node* node = nodes.back();
     while(BFS() == true){
-        Node* n = nodes.back();
+        Node* node = nodes.back();
         int word;
 
-        while (n -> type != SOURCE)
+        while (node -> type != SOURCE)
         {
-            n -> backedge -> original = 1;
-            n -> backedge -> residual = 0;
-            n -> backedge -> reverse -> residual = 1;
-            n -> backedge -> reverse -> original = 0;
+            node -> backedge -> original = 1;
+            node -> backedge -> residual = 0;
+            node -> backedge -> reverse -> residual = 1;
+            node -> backedge -> reverse -> original = 0;
             
-            if (n -> type == WORD){
-                word = n -> id;
+            if (node -> type == WORD){
+                word = node -> id;
             }
-            if (n -> type == DICE){
-                Store_id[word] = n -> id;
+            if (node -> type == DICE){
+                Store_id[word] = node -> id;
             }
-            n = n -> backedge -> to;
+            node = node -> backedge -> to;
         }
     }
     int size = nodes.size();
@@ -138,7 +148,7 @@ bool Graph::spell_word(){
 }
 
 void Graph::delete_word_from_graph(){
-    nodes.back()->adj.clear();
+    nodes.back() -> adj.clear();
 
     for(int i = 0; (size_t)i < nodes[0]->adj.size();i++){
         nodes[0]->adj[i]->original = 1;
@@ -161,9 +171,67 @@ int main(int argc, char *argv[]){
         cerr << "./worddice input1.txt input2.txt" << endl;
         exit(1);
     }
-    string Dices = argv[1];
-    string words = argv[2];
+    string Dices = argv[1], words = argv[2];
+    Graph graph;
+    Node* node;
+    Edge* edge;
+    int id = 0, size;
+    string temp;
+    //setting up the graph
+    Node* source = new Node;
+    source -> type = SOURCE;
+    source -> id = 0;
+    Node* sink = new Node;
+
     fstream re;
     re.open (Dices, std::fstream::in | std::fstream::out | std::fstream::app);
-
+    while (!re.eof())
+    {
+        re << temp;
+        node = new Node;
+        edge = new Edge(source, node);
+        source -> adj.push_back(edge);
+        id++;
+        node -> id = id;
+        size = temp.size();
+        for (int i = 0; i < size; i++)
+        {
+            int pos = temp[i] - 'A';
+            node -> letters[pos] = true;
+        }
+        node -> type = DICE;
+        graph.nodes.push_back(node);
+    }
+    graph.nodes.insert(graph.nodes.begin(), source);
+    re.close();
+    re.clear();
+    graph.min_nodes = id;
+    re.open (words, std::fstream::in | std::fstream::out | std::fstream::app);
+    while (!re.eof())
+    {
+        node -> id = graph.min_nodes;
+        size = temp.size();
+        for (size_t i = 0; i < size; i++)
+        {
+            node = new Node;
+            node -> id = id + i + 1;
+            node -> type = WORD;
+            int pos = temp[i] - 'A';
+            node -> letters[pos] = true;
+            for (int j = 1; j <= graph.min_nodes; j++)
+            {
+                if (graph.nodes[j] -> letters[pos] = true)
+                {
+                    edge = new Edge(graph.nodes[j], node);
+                    graph.nodes[j] -> adj.push_back(edge);
+                    node -> adj.push_back(edge -> reverse);
+                }
+            }
+            edge = new Edge(node, sink);
+            node -> adj.push_back(edge);
+        }
+        
+    }
+    
+    return 0;
 }
