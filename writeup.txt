@@ -2,6 +2,8 @@ Contribution:
 Jay: I worked on spell words and delete word from graph functions as well as
  print. I also made the gradescript.
 
+Andy: I worked on the BFS and got all the inputs to work. I also tested the gradescript
+as well.
 Question:
 We used a queue, map, and a vector in our implementation. The queue was used to 
 in the BFS to check if a node was visited or not. The map was used to hold the
