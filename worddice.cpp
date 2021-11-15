@@ -104,7 +104,6 @@ bool Graph::spell_word(){
     while(BFS() == true){
         Node* node = nodes.back();
         int word;
-
         while (node -> type != SOURCE)
         {
             node -> backedge -> original = 1;
@@ -156,7 +155,7 @@ void Graph::delete_word_from_graph(){
     nodes.erase(nodes.begin() + min_nodes + 1, nodes.end());
     //adj list is reset
     for(int i = 1; i <= min_nodes; i++){
-        nodes[i]->adj.clear();
+        nodes[i] -> adj.clear();
     }
 }
 
@@ -165,7 +164,7 @@ int main(int argc, char *argv[]){
         cerr << "./worddice input1.txt input2.txt" << endl;
         exit(1);
     }
-    string Dices = argv[1], words = argv[2];
+    string Dices(argv[1]), words(argv[2]);
     Graph graph;
     Node* node;
     Edge* edge;
@@ -177,8 +176,8 @@ int main(int argc, char *argv[]){
     source -> id = 0;
     Node* sink = new Node;
 
-    fstream re;
-    re.open (Dices, std::fstream::in | std::fstream::out | std::fstream::app);
+    ifstream re;
+    re.open (Dices);
     while (getline(re, temp))
     {
         node = new Node;
@@ -194,11 +193,12 @@ int main(int argc, char *argv[]){
         node -> type = DICE;
         graph.nodes.push_back(node);
     }
+
     graph.nodes.insert(graph.nodes.begin(), source);
     re.close();
     re.clear();
     graph.min_nodes = id;
-    re.open (words, std::fstream::in | std::fstream::out | std::fstream::app);
+    re.open (words);
     while (getline(re, temp))
     {
         node -> id = graph.min_nodes;
@@ -209,6 +209,7 @@ int main(int argc, char *argv[]){
             node -> type = WORD;
             int pos = temp[i] - 'A';
             node -> letters[pos] = true;
+
             for (int j = 1; j <= graph.min_nodes; j++)
             {
                 if (graph.nodes[j] -> letters[pos] == true)
@@ -234,7 +235,7 @@ int main(int argc, char *argv[]){
                 if(it == graph.Store_id.begin()){
                     cout << it -> second - 1;
                 }else{
-                    cout << "," << it ->second - 1;
+                    cout << "," << it -> second - 1;
                 }
             }
             cout << ": " << temp;
@@ -245,7 +246,6 @@ int main(int argc, char *argv[]){
         cout << endl;
         graph.delete_word_from_graph();
     }
-    
     re.close();
     return 0;
 }
