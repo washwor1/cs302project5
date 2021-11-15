@@ -106,7 +106,6 @@ bool Graph::BFS(){
 }
 
 bool Graph::spell_word(){
-    Node* node = nodes.back();
     while(BFS() == true){
         Node* node = nodes.back();
         int word;
@@ -127,8 +126,7 @@ bool Graph::spell_word(){
             node = node -> backedge -> to;
         }
     }
-    int size = nodes.size();
-    for (int i = min_nodes + 1; i < size; i++)
+    for (int i = min_nodes + 1; (size_t)i < nodes.size(); i++)
     {
         for (int j = 0; (size_t)j < nodes[i] -> adj.size(); j++)
         {
@@ -210,8 +208,7 @@ int main(int argc, char *argv[]){
     while (!re.eof())
     {
         node -> id = graph.min_nodes;
-        size = temp.size();
-        for (size_t i = 0; i < size; i++)
+        for (size_t i = 0; (size_t)i < temp.size(); i++)
         {
             node = new Node;
             node -> id = id + i + 1;
@@ -229,9 +226,26 @@ int main(int argc, char *argv[]){
             }
             edge = new Edge(node, sink);
             node -> adj.push_back(edge);
+            graph.nodes.push_back(node);
         }
+        sink -> type = SINK;
+        sink -> id = graph.nodes.size();
+        graph.nodes.push_back(sink);
+                if(graph.spell_word() == true){
+            for (std::map<int,int>::iterator it=graph.Store_id.begin(); it!=graph.Store_id.end(); ++it){
+                if(it == graph.Store_id.begin())
+                    cout << it->second - 1;
+                else
+                    cout << "," << it->second - 1;
+            }
+            cout << ": "  << temp ;
+        }else
+            cout << "Cannot spell " << temp;
+
+        cout << endl;
         
+        graph.delete_word_from_graph();
     }
-    
+    re.close();
     return 0;
 }
