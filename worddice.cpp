@@ -26,7 +26,7 @@ class Edge{
     int original; //original weight per edge
     int residual; //allows for updated weighting during Edmonds-Karp
     Edge(){};
-    Edge(class Node *TO, class Node *FROM) //constructor for edges
+    Edge(class Node *FROM, class Node *TO) //constructor for edges
     {
         from = FROM;
         to = TO;
@@ -65,8 +65,7 @@ class Graph{
 
 bool Graph::BFS(){
     //backedge is reset
-    int size = nodes.size();
-     for(int i = 0; i < size; i++){
+     for(int i = 0; (size_t)i < nodes.size(); i++){
         nodes[i]->visited = false;
         nodes[i]->backedge = NULL;
     }
@@ -77,23 +76,24 @@ bool Graph::BFS(){
         int node = bfs.front();
         bfs.pop();
 
-        nodes[node]->visited = true;
+        nodes[node] -> visited = true;
         Node* next;
         Edge* edge;
 
         //goes through adj list
         for(int i = 0; (size_t)i < nodes[node] -> adj.size(); i++){
-            next = nodes[node] -> adj[i]->to;
+            next = nodes[node] -> adj[i] -> to;
             edge = nodes[node] -> adj[i];
 
             //adds the unvisted nodes to que 
-            if(!next->visited && edge -> original == 1){
+            if(!next -> visited && edge -> original == 1){
                 //has a backedge set up
                 next -> backedge = edge -> reverse;
-                bfs.push(next->id);
+                bfs.push(next -> id);
                 //checking to see if a path has been found
-                if(next->type == SINK)
+                if(next -> type == SINK){
                     return true;
+                }
             }
         }
     }
@@ -121,6 +121,7 @@ bool Graph::spell_word(){
             node = node -> backedge -> to;
         }
     }
+
     for (int i = min_nodes + 1; (size_t)i < nodes.size(); i++)
     {
         for (int j = 0; (size_t)j < nodes[i] -> adj.size(); j++)
