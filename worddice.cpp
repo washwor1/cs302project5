@@ -22,6 +22,9 @@ class Edge{
     //from -> to
     class Node *to; //node edge is pointing to
     class Node *from; //node edge is pointing from
+    Edge *reverse; //edge going the other way
+    int original; //original weight per edge
+    int residual; //allows for updated weighting during Edmonds-Karp
     Edge(){};
     Edge(class Node *TO, class Node *FROM) //constructor for edges
     {
@@ -37,35 +40,27 @@ class Edge{
         rev -> reverse = this;
         reverse = rev;
     }
-    Edge *reverse; //edge going the other way
-    int original; //original weight per edge
-    int residual; //allows for updated weighting during Edmonds-Karp
 };
 
 class Node{
     public:
-    Node() : letters(26, false), visited(false) {}; //constructor for nodes
     int id; //node id
     Node_Type type; //type of node it is (source, sink, word or dice)
     vector<bool> letters; //length 26 with letters contained in word set to 1
     int visited; //for BFS
     vector<Edge*> adj; //adjacency list
     Edge *backedge; //previous edge for Edmonds-Karp
+    Node() : letters(26, false), visited(false) {}; //constructor for nodes
 };
 
 class Graph{
     public:
-    Node *source; //not necessary but makes code more readable
     vector<Node *> nodes; //holds the nodes
-    vector<int> spellingIds; //order of flow to spell word
     int min_nodes; //min number of dice nodes
     map<int, int> Store_id;
-    void add_dice_to_graph(string die, int id); //add dice nodes to graph
-    void add_word_to_graph(string word, int id); //add word (letter) nodes to graph
     bool BFS(); //breadth first search for Edmonds-Karp
     bool spell_word(); //runs Edmonds-Karp to see if we can spell the word
     void delete_word_from_graph(); //deletes the word nodes but leaves the dice nodes
-    void print_node_order(string word); //print spelling Ids and word
 };
 
 bool Graph::BFS(){
@@ -173,7 +168,7 @@ int main(int argc, char *argv[]){
     Graph graph;
     Node* node;
     Edge* edge;
-    int id = 0, size;
+    int id = 0;
     string temp;
     //setting up the graph
     Node* source = new Node;
@@ -183,16 +178,14 @@ int main(int argc, char *argv[]){
 
     fstream re;
     re.open (Dices, std::fstream::in | std::fstream::out | std::fstream::app);
-    while (!re.eof())
+    while (getline(re, temp))
     {
-        re << temp;
         node = new Node;
         edge = new Edge(source, node);
         source -> adj.push_back(edge);
         id++;
         node -> id = id;
-        size = temp.size();
-        for (int i = 0; i < size; i++)
+        for (int i = 0; (size_t)i < temp.size(); i++)
         {
             int pos = temp[i] - 'A';
             node -> letters[pos] = true;
@@ -205,10 +198,10 @@ int main(int argc, char *argv[]){
     re.clear();
     graph.min_nodes = id;
     re.open (words, std::fstream::in | std::fstream::out | std::fstream::app);
-    while (!re.eof())
+    while (getline(re, temp))
     {
         node -> id = graph.min_nodes;
-        for (size_t i = 0; (size_t)i < temp.size(); i++)
+        for (int i = 0; (size_t)i < temp.size(); i++)
         {
             node = new Node;
             node -> id = id + i + 1;
@@ -217,35 +210,41 @@ int main(int argc, char *argv[]){
             node -> letters[pos] = true;
             for (int j = 1; j <= graph.min_nodes; j++)
             {
-                if (graph.nodes[j] -> letters[pos] = true)
+                if (graph.nodes[j] -> letters[pos] == true)
                 {
                     edge = new Edge(graph.nodes[j], node);
                     graph.nodes[j] -> adj.push_back(edge);
                     node -> adj.push_back(edge -> reverse);
                 }
             }
+
             edge = new Edge(node, sink);
             node -> adj.push_back(edge);
             graph.nodes.push_back(node);
         }
         sink -> type = SINK;
         sink -> id = graph.nodes.size();
-        graph.nodes.push_back(sink);
-                if(graph.spell_word() == true){
-            for (std::map<int,int>::iterator it=graph.Store_id.begin(); it!=graph.Store_id.end(); ++it){
-                if(it == graph.Store_id.begin())
-                    cout << it->second - 1;
-                else
-                    cout << "," << it->second - 1;
-            }
-            cout << ": "  << temp ;
-        }else
-            cout << "Cannot spell " << temp;
 
+        graph.nodes.push_back(sink);
+        if (graph.spell_word() == true)
+        {
+            for (map<int, int>:: iterator it = graph.Store_id.begin(); it != graph.Store_id.end(); ++it)
+            {
+                if(it == graph.Store_id.begin()){
+                    cout << it -> second - 1;
+                }else{
+                    cout << "," << it ->second - 1;
+                }
+            }
+            cout << ": " << temp;
+        }
+        else{
+            cout << "Cannot spell " << temp;
+        }
         cout << endl;
-        
         graph.delete_word_from_graph();
     }
+    
     re.close();
     return 0;
 }
