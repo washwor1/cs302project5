@@ -104,6 +104,7 @@ bool Graph::spell_word(){
     while(BFS() == true){
         Node* node = nodes.back();
         int word;
+        //when visisted
         while (node -> type != SOURCE)
         {
             node -> backedge -> original = 1;
@@ -142,7 +143,7 @@ bool Graph::spell_word(){
 
 void Graph::delete_word_from_graph(){
     nodes.back() -> adj.clear();
-
+    //delete word from graph and setting it back
     for(int i = 0; (size_t)i < nodes[0]->adj.size();i++){
         nodes[0]->adj[i]->original = 1;
         nodes[0]->adj[i]->residual = 0;
@@ -178,6 +179,7 @@ int main(int argc, char *argv[]){
 
     ifstream re;
     re.open (Dices);
+    //setting up the source and the dices
     while (getline(re, temp))
     {
         node = new Node;
@@ -193,12 +195,12 @@ int main(int argc, char *argv[]){
         node -> type = DICE;
         graph.nodes.push_back(node);
     }
-
     graph.nodes.insert(graph.nodes.begin(), source);
     re.close();
     re.clear();
     graph.min_nodes = id;
     re.open (words);
+    //setting up the words and the sink
     while (getline(re, temp))
     {
         node -> id = graph.min_nodes;
@@ -228,6 +230,7 @@ int main(int argc, char *argv[]){
         sink -> id = graph.nodes.size();
 
         graph.nodes.push_back(sink);
+        //output if the word can be spelled
         if (graph.spell_word() == true)
         {
             for (map<int, int>::iterator it = graph.Store_id.begin(); it != graph.Store_id.end(); ++it)
@@ -244,6 +247,7 @@ int main(int argc, char *argv[]){
             cout << "Cannot spell " << temp;
         }
         cout << endl;
+        //clear word for next word
         graph.delete_word_from_graph();
     }
     re.close();
