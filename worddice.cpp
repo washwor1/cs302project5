@@ -228,7 +228,7 @@ int main(int argc, char *argv[]){
         graph.nodes.push_back(sink);
         if (graph.spell_word() == true)
         {
-            for (map<int, int>:: iterator it = graph.Store_id.begin(); it != graph.Store_id.end(); ++it)
+            for (map<int, int>::iterator it = graph.Store_id.begin(); it != graph.Store_id.end(); ++it)
             {
                 if(it == graph.Store_id.begin()){
                     cout << it -> second - 1;
